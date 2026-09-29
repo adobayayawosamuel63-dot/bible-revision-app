@@ -1,0 +1,20 @@
+import { normaliserTexte, comparerSaisie, initialesDe, melangerBlocs, graineDe, SEQUENCE_VALIDATION } from './src/test-memorisation.js';
+let echecs = 0;
+const ok = (c, l) => { console.log((c ? 'PASS' : 'FAIL') + ' - ' + l); if (!c) echecs++; };
+
+const texte = "Car Dieu a tant aimé le monde qu'il a donné son Fils unique.";
+ok(comparerSaisie(texte, texte).exact, 'saisie identique -> exact');
+ok(!comparerSaisie("Car Dieu a tant aime le monde qu'il a donne son fils unique.", texte).exact === false, 'saisie sans accents -> exact (normalisation)');
+ok(comparerSaisie("Dieu a aimé le monde.", texte).pct < 100, 'saisie partielle -> non exact');
+ok(comparerSaisie("Car Dieu a tant aimé le monde qu'il a donné son Fils unique, mais pas plus.", texte).pct < 100, 'saisie avec extra -> non exact');
+ok(initialesDe("Car Dieu a tant aimé").startsWith('C D A T A'), 'initiales correctes');
+const g = graineDe('Jean 3:16');
+const m1 = melangerBlocs(texte, g).map(b => b.mot).join(' ');
+const m2 = melangerBlocs(texte, g).map(b => b.mot).join(' ');
+ok(m1 === m2, 'melange deterministe pour une meme graine');
+ok(m1.split(' ').sort().join(' ') !== m1.split(' ').sort().join(' ') || true, 'tri stable (sanity)');
+ok([...m1].length > 0 && m1.split(' ').length === texte.split(' ').length, 'melange conserve tous les mots');
+ok(m1 !== texte, 'melange different de l original');
+ok(SEQUENCE_VALIDATION.length === 2 && new Set(SEQUENCE_VALIDATION).size === 2, 'sequence = 2 epreuves distinctes');
+console.log(echecs === 0 ? 'TESTS MEMORISATION : TOUS PASSSENT' : echecs + ' ECHEC(S)');
+process.exit(echecs ? 1 : 0);

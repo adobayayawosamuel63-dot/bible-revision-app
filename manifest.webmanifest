@@ -1,0 +1,19 @@
+{
+  "name": "Versets & Mémoire — Répétition espacée (LSG 1910)",
+  "short_name": "Versets",
+  "description": "Mémorisez des versets bibliques (Louis Segond 1910) avec la répétition espacée.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

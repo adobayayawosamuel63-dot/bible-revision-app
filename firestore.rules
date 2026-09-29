@@ -1,0 +1,165 @@
+rules_version = '2';
+
+// =====================================================================
+//  Versets & Mémoire — Règles de sécurité Firestore
+//
+//  ⚠️ À PUBLIER DANS LA CONSOLE FIREBASE après chaque modification
+//     (Firestore Database → Règles → Publier).
+//
+//  Collections réellement utilisées par l'application :
+//    - users/{uid}                    profils + progression (sous-collection)
+//    - versets_globaux/{versetId}     catalogue partagé
+//  Un alias « versets » est également couvert si une ancienne base
+//  l'utilise — mais l'application n'écrit QUE dans versets_globaux.
+//
+//  Bootstrap du compte fondateur : au premier login, l'email déclaré
+//  (isFounderEmail) crée son profil avec role = "super_admin" ; tous
+//  les autres comptes naissent "user". Le rôle n'est modifiable QUE
+//  par le super_admin (et jamais son propre rôle).
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function roleOf(uid) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(uid))
+        ? userDoc(uid).role
+        : 'user';
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && roleOf(request.auth.uid) == 'super_admin';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && roleOf(request.auth.uid) in ['admin', 'super_admin'];
+    }
+
+    function isFounderEmail() {
+      return isSignedIn()
+        && request.auth.token.email == 'grandmaitrecontact@proton.me';
+    }
+
+    // ---------------------------------------------------------------
+    // users/{uid} — profils et progression
+    // ---------------------------------------------------------------
+    match /users/{userId} {
+
+      // Lecture : tous les membres connectés (classement, profils publics)
+      allow read: if isSignedIn();
+
+      // Création : uniquement SON propre profil, rôle verrouillé
+      // ("super_admin" uniquement pour l'email fondateur).
+      allow create: if isOwner(userId)
+        && request.resource.data.role == (
+          isFounderEmail() ? 'super_admin' : 'user'
+        )
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'email', 'displayName', 'role', 'createdAt',
+              'avatar', 'couleurCouverture', 'versetFavori',
+              'photoURL', 'progression', 'derniereConnexion']
+           )
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt == request.time;
+
+      // Mise à jour :
+      //  - le fondateur peut RESTAURER son propre rôle super_admin
+      //    (exclusivement ce champ — auto-régénération des privilèges) ;
+      //  - le propriétaire : tout SAUF role et email ;
+      //  - le super_admin : UNIQUEMENT le rôle d'un tiers (jamais le sien).
+      allow update: if (
+        // Restauration forcée des droits du fondateur
+        (isOwner(userId) && isFounderEmail()
+          && request.resource.data.role == 'super_admin'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        )
+        // Le propriétaire : tout sauf role et email
+        || (isOwner(userId)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.email == resource.data.email
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['role', 'email'])
+        )
+        // Le super_admin : uniquement le rôle d'un tiers (jamais le sien)
+        || (isSuperAdmin() && request.auth.uid != userId
+          && request.resource.data.role in ['user', 'admin', 'super_admin']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        )
+      );
+
+      // Aucune suppression de compte depuis l'application.
+      allow delete: if false;
+
+      // -------------------------------------------------------------
+      // users/{uid}/progression/{versetId} — carnet personnel
+      // -------------------------------------------------------------
+      match /progression/{versetId} {
+        // Chacun ne lit et n'écrit QUE son propre carnet
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // versets_globaux/{id} — catalogue partagé
+    // Lecture : tous les membres connectés (corrige le permission-denied).
+    // Écriture : admin / super_admin uniquement.
+    // ---------------------------------------------------------------
+    match /versets_globaux/{versetId} {
+      allow read: if isSignedIn();
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(
+             ['livre', 'chapitre', 'verset', 'texte',
+              'referenceComplete', 'creePar', 'dateCreation']
+           )
+        && request.resource.data.creePar == request.auth.uid
+        && request.resource.data.livre is string
+        && request.resource.data.livre.size() > 0
+        && request.resource.data.chapitre is int
+        && request.resource.data.verset is int
+        && request.resource.data.verset >= 1
+        && request.resource.data.texte is string
+        && request.resource.data.texte.size() > 0
+        && request.resource.data.texte.size() <= 2000
+        && request.resource.data.referenceComplete is string;
+
+      allow update: if isAdmin()
+        && request.resource.data.creePar == resource.data.creePar
+        && request.resource.data.dateCreation == resource.data.dateCreation;
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // Alias historique « versets » : mêmes droits que versets_globaux,
+    // pour éviter tout permission-denied si d'anciens documents existent.
+    // ---------------------------------------------------------------
+    match /versets/{versetId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------
+    // Tout le reste est interdit par défaut
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
