@@ -1,14 +1,14 @@
-# 📖 Versets & Mémoire — Répétition espacée (Louis Segond 1910)
+#  Versets & Mémoire - Répétition espacée (Louis Segond 1910)
 
 PWA d'apprentissage et de révision de versets bibliques (LSG 1910) avec
 répétition espacée, catalogue global et contrôle d'accès par rôles.
 
 ## Stack
 
-- **Frontend** : HTML + Tailwind (CDN) + JavaScript ES6 modules — hébergeable sur GitHub Pages
-- **Backend** : Firebase Authentication (Email/Mot de passe) + Cloud Firestore
-- **API Bible** : [getBible.net](https://getbible.net) — traduction `ls1910`, CORS ouvert, **sans clé API**
-  - Résolution automatique des références françaises : `Jean 3:16`, `1 Co 13:4`, `Ps 23:1`…
+- Frontend : HTML + Tailwind (CDN) + JavaScript ES6 modules - hébergeable sur GitHub Pages
+- Backend : Firebase Authentication (Email/Mot de passe) + Cloud Firestore
+- API Bible : [getBible.net](https://getbible.net) - traduction `ls1910`, CORS ouvert, **sans clé API**
+- Résolution automatique des références françaises : `Jean 3:16`, `1 Co 13:4`, `Ps 23:1`…
 
 ## Structure
 
@@ -25,13 +25,13 @@ répétition espacée, catalogue global et contrôle d'accès par rôles.
     └── app.js               # Routeur + vues + logique UI
 ```
 
-## 1. Créer le projet Firebase
+## 1. Création du projet Firebase
 
 1. [console.firebase.google.com](https://console.firebase.google.com) → **Ajouter un projet**.
 2. **Authentication** → Sign-in method → activer **Email/Password** **et** **Google**.
 3. **Firestore Database** → Créer (mode production).
 4. **Authentication → Settings → Authorized domains** → ajouter votre domaine
-   (ex. `votre-pseudo.github.io`) — indispensable pour la connexion Google.
+   (ex. `votre-pseudo.github.io`) - indispensable pour la connexion Google.
 5. **Paramètres du projet** → Vos applications → **Web** → copier la config.
 
 > Le premier login Google crée automatiquement le profil dans `users`
@@ -40,7 +40,7 @@ répétition espacée, catalogue global et contrôle d'accès par rôles.
 
 ## 2. Configurer l'application
 
-Dans `src/firebase-config.js`, remplacez :
+Dans `src/firebase-config.js`:
 
 ```js
 const firebaseConfig = {
@@ -52,10 +52,6 @@ const firebaseConfig = {
 ```
 
 ## 3. Déployer les règles de sécurité
-
-Copiez le contenu de `firestore.rules` dans
-**Console Firebase → Firestore → Règles → Publier**
-(ou `firebase deploy --only firestore:rules` avec la CLI).
 
 Les règles garantissent :
 
@@ -70,7 +66,7 @@ Les règles garantissent :
 ## 4. Compte fondateur (Super Admin)
 
 L'email déclaré dans `firestore.rules` (`isFounderEmail()`) et
-`src/firebase-config.js` (`FONDATEUR_EMAIL`) est **grandmaitrecontact@proton.me**.
+`src/firebase-config.js` (`FONDATEUR_EMAIL`) est ** nom@gmail.com **.
 
 Au premier login de cet email, l'application crée automatiquement le profil
 avec `role: "super_admin"`. Tout autre compte est créé simple `user`.
@@ -82,14 +78,14 @@ avec `role: "super_admin"`. Tout autre compte est créé simple `user`.
 
 1. Pousser le dépôt sur GitHub.
 2. **Settings → Pages → Source : `main` / racine**.
-3. L'app est servie sur `https://<utilisateur>.github.io/<repo>/`.
+3. L'app est servie sur `mon github : samuel ADOBAYA`.
 
 Aucun build n'est nécessaire (Tailwind via CDN, SDK Firebase via import CDN —
 les imports nus `firebase/app` fonctionnent car les navigateurs modernes
 résolvent les modules via l'import map déclarée dans `index.html`).
 
-> ⚠️ Si votre navigateur cible ne supporte pas les import maps, ajoutez
-> Firebase via l'import map gmaps ou convertissez le projet avec Vite.
+> Si votre navigateur cible ne supporte pas les import maps, ajoutez
+> Firebase via l'import map gmaps ou convertissez le projet avec Vite.  (plan B)
 
 ## Algorithme de répétition espacée
 
@@ -108,14 +104,14 @@ résolvent les modules via l'import map déclarée dans `index.html`).
 La logique est isolée dans `src/spaced-repetition.js` (aucune dépendance
 Firebase, testable unitairement).
 
-## Modes d'apprentissage — double validation obligatoire
+## Modes d'apprentissage - double validation obligatoire
 
 Un verset n'est validé qu'après la réussite de **deux épreuves différentes**,
 toutes les deux à 100 % :
 
-1. **Saisie mot à mot** — recopier le verset de mémoire (correction surlignée
+1. **Saisie mot à mot** - recopier le verset de mémoire (correction surlignée
    mot par mot, initiales disponibles en aide) ;
-2. **Reconstitution dans l'ordre** — remettre les mots mélangés dans le bon
+2. **Reconstitution dans l'ordre** - remettre les mots mélangés dans le bon
    ordre en les touchant.
 
 Tant que les deux épreuves ne sont pas réussies, le bouton **« Valider la
@@ -131,9 +127,9 @@ Charte « Bleu Nuit & Or » premium : fond profond (#0F172A), cartes (#1E293B)
 bordées d'un filet ambré translucide, accents or chaud (#D97706 → #F59E0B),
 titres ivoire (#F8FAFC), sous-titres gris (#94A3B8). Typographies : Playfair
 Display pour les versets et titres, Inter pour l'interface. Icônes SVG sobres,
-aucun emoji. Aucun framework CSS — styles purs, sans CDN Tailwind.
+aucun emoji. Aucun framework CSS - styles purs, sans CDN Tailwind.
 
-Navigation : barre unique de 64 px, jamais de retour à la ligne — les liens
+Navigation : barre unique de 64 px, jamais de retour à la ligne - les liens
 d'administration (Gestion des versets, Gestion des comptes) sont regroupés
 dans un menu déroulant « Administration », et le menu hamburger prend le
 relais dès que l'écran fait moins de 1280 px.
@@ -145,9 +141,9 @@ un voile dégradé sombre garantissant la lisibilité du texte ivoire :
 
 | Fichier (à la racine du projet) | Sections |
 |---|---|
-| `jannis-nobauer-qls4Edt9UbE-unsplash.jpg` | Salle de révision + Catalogue |
-| `nik-shuliahin-AXos3O7fRGk-unsplash.jpg` | Entraînement libre + cartes d'épreuve |
-| `nate-steele-FPdkDrq9X-4-unsplash.jpg` | Classement (bandeau communautaire) |
+| `unsplash1.jpg` | Salle de révision + Catalogue |
+| `unsplash2.jpg` | Entraînement libre + cartes d'épreuve |
+| `unsplash3.jpg` | Classement (bandeau communautaire) |
 
 Si un fichier est absent, une illustration SVG de repli s'affiche
 automatiquement : la page reste impeccable en toutes circonstances.
@@ -161,7 +157,7 @@ automatiquement : la page reste impeccable en toutes circonstances.
 - typographies Google Fonts avec `display=swap` ;
 - illustrations 100 % SVG inline (zéro image distante).
 
-## Profil & classement
+## Profil & classement (Assez moche mais c'est un mvp)
 
 - **Profil** : nom affiché, avatar coloré (6 palettes), couverture illustrée
   (4 paysages SVG : aurore dorée, manuscrit, nuit étoilée, olivier), verset
@@ -171,5 +167,5 @@ automatiquement : la page reste impeccable en toutes circonstances.
 - **Points** : +10 par révision validée ; **série** de jours consécutifs ;
 - **Classement public** : podium + top 50 trié par points (profils publics
   consultables en touchant une ligne). Les règles Firestore ouvrent la lecture
-  des profils aux membres connectés — l'email y figure : retirez-le de
+  des profils aux membres connectés - l'email y figure : retirez-le de
   l'affichage si vous souhaitez le rendre privé.

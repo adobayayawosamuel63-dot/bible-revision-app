@@ -78,7 +78,7 @@ export async function banniereHTML(section, titre, mention = '', options = {}) {
 
 /**
  * Version synchrone : la photo est insérée avec opacité 0 puis fondue
- * dès qu'elle est vérifiée — utile pour les contenus déjà rendus.
+ * dès qu'elle est vérifiée - utile pour les contenus déjà rendus.
  *
  * @param {string} section
  * @param {string} titre
